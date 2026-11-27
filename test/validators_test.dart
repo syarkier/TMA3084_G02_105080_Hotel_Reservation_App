@@ -1,0 +1,76 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hotel_reservation_app/validators.dart';
+
+void main() {
+  group('validateName', () {
+    test('rejects null', () {
+      expect(validateName(null), 'Please enter your name');
+    });
+    test('rejects an empty or blank name', () {
+      expect(validateName(''), 'Please enter your name');
+      expect(validateName('   '), 'Please enter your name');
+    });
+    test('rejects a name with fewer than 3 characters', () {
+      expect(validateName('Al'), 'Name must have at least 3 characters');
+    });
+    test('accepts a name with 3 or more characters', () {
+      expect(validateName('Ali'), isNull);
+      expect(validateName('  Siti Aminah  '), isNull);
+    });
+  });
+
+  group('validateEmail', () {
+    test('rejects null or an empty email', () {
+      expect(validateEmail(null), 'Please enter your email');
+      expect(validateEmail('  '), 'Please enter your email');
+    });
+    test('rejects an email without @ or a domain', () {
+      expect(validateEmail('ali.hassan'), 'Enter a valid email address');
+      expect(validateEmail('ali@'), 'Enter a valid email address');
+      expect(validateEmail('ali@mail'), 'Enter a valid email address');
+    });
+    test('accepts a valid email', () {
+      expect(validateEmail('ali@unimas.my'), isNull);
+    });
+  });
+
+  group('validatePhone', () {
+    test('rejects null or an empty phone number', () {
+      expect(validatePhone(null), 'Please enter your phone number');
+      expect(validatePhone(''), 'Please enter your phone number');
+    });
+    test('rejects fewer than 10 digits', () {
+      expect(validatePhone('12345'), 'Use 10 or 11 digits, numbers only');
+      expect(validatePhone('012345678'), 'Use 10 or 11 digits, numbers only');
+    });
+    test('rejects letters or more than 11 digits', () {
+      expect(validatePhone('01234abcde'), 'Use 10 or 11 digits, numbers only');
+      expect(
+        validatePhone('012345678901'),
+        'Use 10 or 11 digits, numbers only',
+      );
+    });
+    test('accepts 10 or 11 digits', () {
+      expect(validatePhone('0123456789'), isNull);
+      expect(validatePhone('01234567890'), isNull);
+    });
+  });
+
+  group('validateCheckIn', () {
+    test('rejects a missing date', () {
+      expect(validateCheckIn(null), 'Choose a check-in date');
+    });
+    test('accepts a chosen date', () {
+      expect(validateCheckIn(DateTime(2026, 11, 20)), isNull);
+    });
+  });
+
+  group('validateAgreement', () {
+    test('rejects an unticked policy box', () {
+      expect(validateAgreement(false), 'Please accept the hotel policy');
+    });
+    test('accepts a ticked policy box', () {
+      expect(validateAgreement(true), isNull);
+    });
+  });
+}

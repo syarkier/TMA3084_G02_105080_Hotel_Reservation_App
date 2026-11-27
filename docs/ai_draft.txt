@@ -1,0 +1,98 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+// Change "hotel_reservation_app" to the `name:` in your pubspec.yaml.
+import 'package:hotel_reservation_app/booking_form_page.dart';
+import 'package:hotel_reservation_app/validators.dart';
+
+// REQ-12: A guest can reserve a room only after entering valid details.
+
+Future<void> pumpBookingForm(WidgetTester tester) async {
+  await tester.pumpWidget(const MaterialApp(home: BookingFormPage()));
+}
+
+Future<void> tapReserve(WidgetTester tester) async {
+  final reserve = find.widgetWithText(FilledButton, 'Reserve');
+  await tester.ensureVisible(reserve);
+  await tester.pumpAndSettle();
+  await tester.tap(reserve);
+  await tester.pumpAndSettle();
+}
+
+Finder nameField() => find.widgetWithText(TextFormField, 'Guest name');
+Finder phoneField() => find.widgetWithText(TextFormField, 'Phone number');
+
+void main() {
+  testWidgets('AC1 shows errors for name, phone, check-in date and policy '
+      'when Reserve is tapped with every field empty', (tester) async {
+    await pumpBookingForm(tester);
+
+    await tapReserve(tester);
+
+    // Expected messages come from the app's own validators,
+    // so the test does not depend on copying the wording.
+    expect(find.text(validateName('')!), findsOneWidget);
+    expect(find.text(validatePhone('')!), findsOneWidget);
+    expect(find.text(validateCheckIn(null)!), findsOneWidget);
+    expect(find.text(validateAgreement(false)!), findsOneWidget);
+    expect(find.text('Choose Your Room'), findsNothing);
+  });
+
+  testWidgets('AC2 shows "Use 10 or 11 digits, numbers only" '
+      'when the phone number has fewer than 10 digits', (tester) async {
+    await pumpBookingForm(tester);
+
+    await tester.enterText(phoneField(), '012345678'); // 9 digits
+    await tapReserve(tester);
+
+    expect(find.text('Use 10 or 11 digits, numbers only'), findsOneWidget);
+  });
+
+  testWidgets('AC3 shows "Name must have at least 3 characters" '
+      'when the name has fewer than 3 characters', (tester) async {
+    await pumpBookingForm(tester);
+
+    await tester.enterText(nameField(), 'Al'); // 2 characters
+    await tapReserve(tester);
+
+    expect(find.text('Name must have at least 3 characters'), findsOneWidget);
+  });
+
+  testWidgets('AC4 opens the Choose Your Room screen '
+      'when every detail is valid and Reserve is tapped', (tester) async {
+    await pumpBookingForm(tester);
+
+    await tester.enterText(nameField(), 'Syakir');
+    await tester.enterText(phoneField(), '0123456789'); // 10 digits
+
+    // Pick today's date (the picker opens on today) and confirm.
+    await tester.tap(find.text('Choose check-in date'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    final policy = find.text('I accept the hotel policy');
+    await tester.ensureVisible(policy);
+    await tester.pumpAndSettle();
+    await tester.tap(policy);
+    await tester.pump();
+
+    await tapReserve(tester);
+
+    expect(find.text('Choose Your Room'), findsOneWidget);
+  });
+
+  testWidgets('AC5 removes the name error '
+      'when the guest then types a valid name', (tester) async {
+    await pumpBookingForm(tester);
+
+    await tester.enterText(nameField(), 'Al');
+    await tapReserve(tester);
+    expect(find.text('Name must have at least 3 characters'), findsOneWidget);
+
+    await tester.enterText(nameField(), 'Alice');
+    await tester.pump();
+
+    expect(find.text('Name must have at least 3 characters'), findsNothing);
+  });
+}
