@@ -8,6 +8,7 @@ class RoomType {
     required this.name,
     required this.icon,
     required this.description,
+    required this.price,
     this.isExpanded = false,
   });
 
@@ -15,6 +16,7 @@ class RoomType {
   final String name;
   final IconData icon;
   final String description;
+  final int price;
   bool isExpanded;
 }
 
@@ -25,6 +27,7 @@ List<RoomType> buildRooms(RoomPreference preferred) {
       name: 'Single Room',
       icon: Icons.single_bed,
       description: 'One guest, one single bed. RM 120 per night.',
+      price: 120,
       isExpanded: preferred == RoomPreference.single,
     ),
     RoomType(
@@ -32,6 +35,7 @@ List<RoomType> buildRooms(RoomPreference preferred) {
       name: 'Double Room',
       icon: Icons.king_bed,
       description: 'Two guests, one double bed. RM 180 per night.',
+      price: 180,
       isExpanded: preferred == RoomPreference.double,
     ),
     RoomType(
@@ -39,6 +43,7 @@ List<RoomType> buildRooms(RoomPreference preferred) {
       name: 'Family Room',
       icon: Icons.family_restroom,
       description: 'Four guests, two beds, living area. RM 260 per night.',
+      price: 260,
       isExpanded: preferred == RoomPreference.family,
     ),
   ];

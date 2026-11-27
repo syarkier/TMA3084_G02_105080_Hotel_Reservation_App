@@ -29,41 +29,72 @@ class _RoomListPageState extends State<RoomListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Choose Your Room')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Check-in ${widget.checkIn}',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            Text('${widget.guests} guests'),
-            const SizedBox(height: 16),
-            ExpansionPanelList(
-              expansionCallback: (int index, bool isExpanded) {
-                setState(() {
-                  _rooms[index].isExpanded = isExpanded;
-                });
-              },
-              children: _rooms.map((room) {
-                return ExpansionPanel(
-                  canTapOnHeader: true,
-                  isExpanded: room.isExpanded,
-                  headerBuilder: (context, isExpanded) {
-                    return ListTile(
-                      leading: Icon(room.icon),
-                      title: Text(room.name),
-                    );
-                  },
-                  body: ListTile(title: Text(room.description)),
-                );
-              }).toList(),
-            ),
-          ],
+        // Animation 2: the page content fades and slides up when it opens
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0, end: 1),
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, 40 * (1 - value)),
+                child: child,
+              ),
+            );
+          },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Change 3: booking summary card
+              Card(
+                color: colors.primaryContainer,
+                child: ListTile(
+                  leading: Icon(
+                    Icons.event_available,
+                    color: colors.onPrimaryContainer,
+                  ),
+                  title: Text('Check-in ${widget.checkIn}'),
+                  subtitle: Text('${widget.guests} guests'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ExpansionPanelList(
+                expansionCallback: (int index, bool isExpanded) {
+                  setState(() {
+                    _rooms[index].isExpanded = isExpanded;
+                  });
+                },
+                children: _rooms.map((room) {
+                  return ExpansionPanel(
+                    canTapOnHeader: true,
+                    isExpanded: room.isExpanded,
+                    headerBuilder: (context, isExpanded) {
+                      // Change 3: icon in a circle and the price under the name
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: colors.secondaryContainer,
+                          child: Icon(
+                            room.icon,
+                            color: colors.onSecondaryContainer,
+                          ),
+                        ),
+                        title: Text(room.name),
+                        subtitle: Text('RM ${room.price} / night'),
+                      );
+                    },
+                    body: ListTile(title: Text(room.description)),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
         ),
       ),
     );

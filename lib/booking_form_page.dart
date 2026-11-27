@@ -72,8 +72,29 @@ class _BookingFormPageState extends State<BookingFormPage> {
     );
   }
 
+  // Animation 1: error messages fade and grow in instead of popping in
+  Widget _animatedError(String? message, TextStyle style, double top) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SizeTransition(sizeFactor: animation, child: child),
+        );
+      },
+      child: message == null
+          ? const SizedBox.shrink()
+          : Padding(
+              key: ValueKey(message),
+              padding: EdgeInsets.only(top: top, left: 12),
+              child: Text(message, style: style),
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     final checkIn = _checkIn;
     final dateError = _dateError;
     final policyError = _policyError;
@@ -92,11 +113,43 @@ class _BookingFormPageState extends State<BookingFormPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Change 2: hotel header card
+              Card(
+                color: colors.primaryContainer,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.hotel,
+                        size: 40,
+                        color: colors.onPrimaryContainer,
+                      ),
+                      const SizedBox(width: 16),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hotel Kenyalang',
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(color: colors.onPrimaryContainer),
+                          ),
+                          Text(
+                            'Kuching, Sarawak',
+                            style: TextStyle(color: colors.onPrimaryContainer),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Guest name',
-                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
                 ),
                 validator: validateName,
               ),
@@ -106,7 +159,7 @@ class _BookingFormPageState extends State<BookingFormPage> {
                 keyboardType: TextInputType.phone,
                 decoration: const InputDecoration(
                   labelText: 'Phone number',
-                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.phone),
                 ),
                 validator: validatePhone,
               ),
@@ -121,11 +174,7 @@ class _BookingFormPageState extends State<BookingFormPage> {
                             .formatShortDate(checkIn),
                 ),
               ),
-              if (dateError != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 6, left: 12),
-                  child: Text(dateError, style: errorStyle),
-                ),
+              _animatedError(dateError, errorStyle, 6),
               const SizedBox(height: 16),
               Text('Guests: ${_guests.round()}'),
               Slider(
@@ -178,11 +227,7 @@ class _BookingFormPageState extends State<BookingFormPage> {
                   });
                 },
               ),
-              if (policyError != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: Text(policyError, style: errorStyle),
-                ),
+              _animatedError(policyError, errorStyle, 0),
               const SizedBox(height: 16),
               FilledButton(onPressed: _submit, child: const Text('Reserve')),
             ],
